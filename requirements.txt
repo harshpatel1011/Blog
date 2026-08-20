@@ -5,3 +5,5 @@ psycopg[binary]
 dj-database-url
 python-dotenv
 Pillow
+django-cloudinary-storage
+cloudinary
