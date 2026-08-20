@@ -152,6 +152,10 @@ STORAGES = {
     },
 }
 
+# django-cloudinary-storage's collectstatic override still reads this old-style
+# setting, so keep it in sync with STORAGES["staticfiles"]["BACKEND"] above.
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
