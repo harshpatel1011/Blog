@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Blogs - Edit Comment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 600px;">
+            <div class="page-header">
+                <div class="header-text">
+                    <h1>Edit Comment</h1>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'comment_update' comment.id %}">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label" for="text">Comment</label>
+                        <textarea id="text" name="text" class="form-input" rows="4" required>{{ comment.text }}</textarea>
+                    </div>
+                </div>
+
+                <div class="action-buttons" style="justify-content: flex-end; margin-top: 1rem; align-items: stretch;">
+                    <a href="{% url 'post_detail' post.id %}" class="btn-secondary" style="min-width: 170px; display: flex; align-items: center; justify-content: center;">Cancel</a>
+                    <button type="submit" class="btn-primary" style="min-width: 170px; display: flex; align-items: center; justify-content: center;">Update Comment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<!-- Scroll position script to prevent page from moving to top -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var scrollpos = sessionStorage.getItem('scrollpos');
+        var scrollurl = sessionStorage.getItem('scrollurl');
+        if (scrollpos && scrollurl === window.location.href) {
+            window.scrollTo(0, scrollpos);
+        }
+        sessionStorage.removeItem('scrollpos');
+        sessionStorage.removeItem('scrollurl');
+    });
+    window.addEventListener('beforeunload', function() {
+        sessionStorage.setItem('scrollpos', window.scrollY);
+        sessionStorage.setItem('scrollurl', window.location.href);
+    });
+</script>
+</body>
+
+</html>

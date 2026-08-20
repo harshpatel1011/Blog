@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Blogs - Add Post</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 600px;">
+            <div class="page-header">
+                <div class="header-text">
+                    <h1>Add Post</h1>
+                    <p>Create a new blog post</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'post_add' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label" for="title">Title</label>
+                        <input type="text" id="title" name="title" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label">Cover Image (Optional)</label>
+                        
+                        <div id="image-upload-area" style="border: 2px dashed var(--border-color); padding: 2rem; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('image').click();" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 0.5rem;"></i>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;">Click to upload an image</p>
+                            <input type="file" id="image" name="image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                        </div>
+
+                        <div id="image-preview-area" style="display: none; align-items: flex-start; gap: 1rem; margin-top: 0.5rem; background: var(--bg-hover); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div style="position: relative; width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
+                                <img id="preview-img" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
+                                <p id="preview-filename" style="font-size: 0.9rem; color: var(--text-primary); margin-bottom: 0.75rem; word-break: break-all; font-weight: 500;"></p>
+                                <button type="button" class="btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; color: var(--danger); border-color: var(--danger);" onclick="clearImage()">
+                                    <i class="fa-solid fa-xmark"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label" for="content">Content</label>
+                        <textarea id="content" name="content" class="form-input" rows="6" required></textarea>
+                    </div>
+                </div>
+
+                <div class="action-buttons" style="justify-content: flex-end; margin-top: 1rem; align-items: stretch;">
+                    <a href="{% url 'home' %}" class="btn-secondary" style="min-width: 160px; display: flex; align-items: center; justify-content: center;">Cancel</a>
+                    <button type="submit" class="btn-primary" style="min-width: 160px; display: flex; align-items: center; justify-content: center;">Add Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            const previewArea = document.getElementById('image-preview-area');
+            const uploadArea = document.getElementById('image-upload-area');
+            const previewImg = document.getElementById('preview-img');
+            const previewFilename = document.getElementById('preview-filename');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewFilename.textContent = input.files[0].name;
+                    uploadArea.style.display = 'none';
+                    previewArea.style.display = 'flex';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearImage() {
+            const input = document.getElementById('image');
+            const previewArea = document.getElementById('image-preview-area');
+            const uploadArea = document.getElementById('image-upload-area');
+            
+            input.value = '';
+            previewArea.style.display = 'none';
+            uploadArea.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

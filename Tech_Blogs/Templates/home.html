@@ -1,0 +1,344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Blogs - Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="main-content">
+            <div class="content-wrapper">
+
+                <div class="page-header full-width-breakout">
+                    <div class="header-text">
+                        <a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">
+                            <h1>Tech Blogs</h1>
+                            <p>Latest updates and articles</p>
+                        </a>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                        <!-- Search Bar -->
+                        <form action="{% url 'home' %}" method="GET" style="display: flex; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 4px; padding: 0.25rem 0.5rem; overflow: hidden; margin: 0;">
+                            <input type="text" name="q" placeholder="Search blogs..." value="{{ request.GET.q|default:'' }}" style="border: none; outline: none; background: transparent; color: var(--text-primary); padding: 0.5rem; width: 220px; font-family: 'Inter', sans-serif;">
+                            <button type="submit" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </form>
+
+                        {% if not user %}
+                        <div class="action-buttons">
+                            <a href="{% url 'login' %}" class="btn-primary">Log In</a>
+                        </div>
+                        {% else %}
+                        <div class="action-buttons" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            
+                            <a href="{% url 'post_add' %}" class="btn-primary" style="white-space: nowrap;">
+                                <i class="fa-solid fa-plus"></i> New Post
+                            </a>
+                            <a href="{% url 'profile' %}" class="btn-secondary" style="white-space: nowrap;">
+                                <i class="fa-solid fa-user"></i> Profile
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if posts or messages %}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; margin-bottom: 2rem;">
+                    {% if posts %}
+                    <h2 style="font-family: 'Playfair Display', serif; font-size: 1.75rem; color: var(--text-primary); margin: 0;">Latest Articles</h2>
+                    {% else %}
+                    <div></div>
+                    {% endif %}
+
+                    {% if messages %}
+                    <div style="text-align: right;">
+                        {% for message in messages %}
+                            <p style="color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; margin: 0;">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if posts %}
+                <div style="display: grid; grid-template-columns: 1fr; gap: 3rem;">
+                    
+                    <!-- Main Feed -->
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        {% for post in posts %}
+                        <article class="student-card"
+                            style="display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; padding: 2rem;"
+                            onclick="window.location.href='{% url 'post_detail' post.id %}'">
+                            
+                            {% if post.image %}
+                            <div style="margin-bottom: 1.5rem;">
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px;">
+                            </div>
+                            {% endif %}
+                            <header style="margin-bottom: 1.5rem;">
+                                <h3 style="font-size: 1.75rem; margin-bottom: 0.5rem; overflow-wrap: break-word; word-break: break-word;"><a href="{% url 'post_detail' post.id %}" style="color: var(--text-primary);">{{ post.title }}</a></h3>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">By {{ post.author }} &bull; {{ post.created_at|date:"M d, Y" }}</p>
+                            </header>
+                            
+                            <div style="margin-bottom: 2rem;">
+                                <p style="color: var(--text-primary); font-size: 1rem; line-height: 1.6; overflow-wrap: break-word; word-break: break-word;">{{ post.content|truncatechars:400 }}</p>
+                            </div>
+                            
+                            <footer style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                                <div class="action-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <a href="{% url 'post_like' post.id %}" class="dossier-btn" onclick="event.stopPropagation();">
+                                        {% if user in post.likes.all %}
+                                        <i class="fa-solid fa-thumbs-up" style="color: var(--primary);"></i>
+                                        {% else %}
+                                        <i class="fa-regular fa-thumbs-up"></i>
+                                        {% endif %}
+                                        {{ post.likes.count }}
+                                    </a>
+                                    {% if post.author == user.username %}
+                                    <a href="{% url 'post_update' post.id %}" class="dossier-btn" onclick="event.stopPropagation();"><i
+                                            class="fa-solid fa-pen-to-square"></i></a>
+                                    <a href="{% url 'post_delete' post.id %}" class="dossier-btn danger"
+                                        onclick="event.stopPropagation(); return confirm('Delete this post?');"><i class="fa-solid fa-trash"></i></a>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'post_detail' post.id %}" style="color: var(--primary); font-size: 0.9rem; font-weight: 500;">Read More &rarr;</a>
+                            </footer>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Sidebar -->
+                    <aside style="display: flex; flex-direction: column; gap: 2rem;">
+                        <!-- About Widget -->
+                        <div class="student-card" style="padding: 1.5rem; text-align: center;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--primary); color: white; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin: 0 auto 1rem;">
+                                <i class="fa-solid fa-code"></i>
+                            </div>
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">About Tech Blogs</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">Welcome to our community! We share the latest insights, tutorials, and trends in software engineering, frontend frameworks, and backend architecture.</p>
+                        </div>
+                        
+                        <!-- Newsletter Widget -->
+                        <div class="student-card" style="padding: 1.5rem; background-color: var(--bg-hover);">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">Subscribe</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin-bottom: 1rem;">Get the latest posts delivered right to your inbox.</p>
+                            <form style="display: flex; flex-direction: column; gap: 0.75rem;" onsubmit="event.preventDefault(); alert('Subscribed successfully!');">
+                                <input type="email" placeholder="Your email address" required style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--bg-card); color: var(--text-primary); width: 100%;">
+                                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">Subscribe</button>
+                            </form>
+                        </div>
+
+                        <!-- Advertisement Widget (Top) -->
+                        <div class="student-card" style="padding: 0; overflow: hidden; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="background-color: var(--bg-hover); padding: 2.5rem 1.5rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.5rem;">Sponsored</span>
+                                <h4 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1rem; line-height: 1.4;">Master Python with AI Developer Tools</h4>
+                                <a href="{% url 'static_page' 'sponsored' %}" class="btn-primary" style="display: inline-block;">Start Free Trial</a>
+                            </div>
+                        </div>
+
+                        <!-- Categories Widget -->
+                        <div class="student-card" style="padding: 1.5rem;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Popular Topics</h3>
+                            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <a href="/?q=Web+Development" style="color: var(--text-secondary); font-size: 0.95rem; text-decoration: none;"><i class="fa-solid fa-angle-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i> Web Development</a>
+                                    <span style="background-color: var(--bg-hover); color: var(--text-muted); padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">12</span>
+                                </li>
+                                <li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <a href="/?q=Django" style="color: var(--text-secondary); font-size: 0.95rem; text-decoration: none;"><i class="fa-solid fa-angle-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i> Python & Django</a>
+                                    <span style="background-color: var(--bg-hover); color: var(--text-muted); padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">8</span>
+                                </li>
+                                <li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <a href="/?q=Machine+Learning" style="color: var(--text-secondary); font-size: 0.95rem; text-decoration: none;"><i class="fa-solid fa-angle-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i> Machine Learning</a>
+                                    <span style="background-color: var(--bg-hover); color: var(--text-muted); padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">5</span>
+                                </li>
+                                <li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <a href="/?q=UI/UX" style="color: var(--text-secondary); font-size: 0.95rem; text-decoration: none;"><i class="fa-solid fa-angle-right" style="margin-right: 0.5rem; font-size: 0.8rem;"></i> UI/UX Design</a>
+                                    <span style="background-color: var(--bg-hover); color: var(--text-muted); padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">3</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Top Contributors Widget -->
+                        <div class="student-card" style="padding: 1.5rem;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Top Contributors</h3>
+                            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+                                {% for author in top_authors %}
+                                <li style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--text-secondary); font-size: 0.95rem; font-weight: 500;">{{ author.author }}</span>
+                                    <span style="background-color: var(--primary); color: white; padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">{{ author.post_count }} posts</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <!-- Trending Posts Widget -->
+                        <div class="student-card" style="padding: 1.5rem;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Trending Now</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                {% for trending in trending_posts %}
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <a href="{% url 'post_detail' trending.id %}" style="font-size: 1rem; font-weight: 500; color: var(--text-primary); line-height: 1.4;">{{ trending.title }}</a>
+                                    <span style="font-size: 0.8rem; color: var(--text-secondary);">By {{ trending.author }} &bull; {{ trending.like_count }} Likes</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Comments Widget -->
+                        <div class="student-card" style="padding: 1.5rem;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Recent Comments</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                {% for comment in recent_comments %}
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem; border-left: 3px solid var(--primary); padding-left: 0.75rem;">
+                                    <span style="font-size: 0.8rem; color: var(--text-secondary);"><strong>{{ comment.name }}</strong> on <a href="{% url 'post_detail' comment.post.id %}" style="color: var(--text-secondary); text-decoration: underline;">{{ comment.post.title|truncatechars:20 }}</a></span>
+                                    <p style="font-size: 0.9rem; color: var(--text-primary); margin: 0;">"{{ comment.text|truncatechars:60 }}"</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Advertisement Widget -->
+                        <div class="student-card" style="padding: 0; overflow: hidden; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="background-color: var(--bg-hover); padding: 2.5rem 1.5rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.5rem;">Advertisement</span>
+                                <h4 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1rem; line-height: 1.4;">Unlock Premium Coding Tutorials</h4>
+                                <a href="{% url 'static_page' 'premium-tutorials' %}" class="btn-primary" style="display: inline-block;">Learn More</a>
+                            </div>
+                        </div>
+
+                        <!-- Tag Cloud Widget -->
+                        <div class="student-card" style="padding: 1.5rem;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Tags</h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <a href="/?q=Django" style="text-decoration: none; display: inline-block;"><span style="background-color: var(--bg-hover); color: var(--text-secondary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--primary)'; this.style.color='white';" onmouseout="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-secondary)';">Django</span></a>
+                                <a href="/?q=Python" style="text-decoration: none; display: inline-block;"><span style="background-color: var(--bg-hover); color: var(--text-secondary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--primary)'; this.style.color='white';" onmouseout="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-secondary)';">Python</span></a>
+                                <a href="/?q=React" style="text-decoration: none; display: inline-block;"><span style="background-color: var(--bg-hover); color: var(--text-secondary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--primary)'; this.style.color='white';" onmouseout="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-secondary)';">React</span></a>
+                                <a href="/?q=Docker" style="text-decoration: none; display: inline-block;"><span style="background-color: var(--bg-hover); color: var(--text-secondary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--primary)'; this.style.color='white';" onmouseout="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-secondary)';">Docker</span></a>
+                                <a href="/?q=API" style="text-decoration: none; display: inline-block;"><span style="background-color: var(--bg-hover); color: var(--text-secondary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--primary)'; this.style.color='white';" onmouseout="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-secondary)';">API Design</span></a>
+                                <a href="/?q=CSS" style="text-decoration: none; display: inline-block;"><span style="background-color: var(--bg-hover); color: var(--text-secondary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--primary)'; this.style.color='white';" onmouseout="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-secondary)';">CSS</span></a>
+                                <a href="/?q=Git" style="text-decoration: none; display: inline-block;"><span style="background-color: var(--bg-hover); color: var(--text-secondary); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--primary)'; this.style.color='white';" onmouseout="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-secondary)';">Git</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Social Widget -->
+                        <div class="student-card" style="padding: 1.5rem; text-align: center;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Follow Us</h3>
+                            <div style="display: flex; justify-content: center; gap: 1rem;">
+                                <a href="https://twitter.com" target="_blank" style="color: var(--text-secondary); font-size: 1.5rem; transition: color 0.2s;"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="https://github.com" target="_blank" style="color: var(--text-secondary); font-size: 1.5rem; transition: color 0.2s;"><i class="fa-brands fa-github"></i></a>
+                                <a href="https://linkedin.com" target="_blank" style="color: var(--text-secondary); font-size: 1.5rem; transition: color 0.2s;"><i class="fa-brands fa-linkedin"></i></a>
+                            </div>
+                        </div>
+
+                        <!-- Advertisement Widget (Bottom) -->
+                        <div class="student-card" style="padding: 0; overflow: hidden; text-align: center; border: 1px solid var(--border-color);">
+                            <div style="background-color: var(--bg-hover); padding: 2.5rem 1.5rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.5rem;">Advertisement</span>
+                                <h4 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1rem; line-height: 1.4;">Cloud Hosting Sale - 50% Off Annual Plans</h4>
+                                <a href="{% url 'static_page' 'hosting-sale' %}" class="btn-primary" style="display: inline-block;">Claim Offer</a>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+
+                <!-- Responsive Sidebar layout trick -->
+                <style>
+                    @media (min-width: 1024px) {
+                        div[style*="grid-template-columns: 1fr;"] {
+                            grid-template-columns: 2.5fr 1fr !important;
+                        }
+                    }
+                </style>
+
+                {% else %}
+                <div class="student-grid" style="margin-top: 3rem;">
+                    <p class="form-label" style="grid-column: 1 / -1;">No blog posts available yet.</p>
+                </div>
+                {% endif %}
+
+                <!-- Footer -->
+                <footer class="full-width-breakout" style="margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.9rem; background-color: var(--bg-card);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+                        <!-- Brand Column -->
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-primary); margin: 0;">Tech Blogs</h3>
+                            <p style="line-height: 1.6; margin: 0;">Your daily dose of programming tutorials, software engineering insights, and tech industry news. Built with Django.</p>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                                <a href="https://twitter.com" target="_blank" style="color: var(--text-secondary); font-size: 1.25rem;"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="https://github.com" target="_blank" style="color: var(--text-secondary); font-size: 1.25rem;"><i class="fa-brands fa-github"></i></a>
+                                <a href="https://linkedin.com" target="_blank" style="color: var(--text-secondary); font-size: 1.25rem;"><i class="fa-brands fa-linkedin"></i></a>
+                            </div>
+                        </div>
+
+                        <!-- Quick Links -->
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <h4 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Quick Links</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><a href="{% url 'home' %}" style="color: var(--text-secondary); text-decoration: none;">Home</a></li>
+                                <li><a href="{% url 'static_page' 'about-us' %}" style="color: var(--text-secondary); text-decoration: none;">About Us</a></li>
+                                <li><a href="{% url 'static_page' 'contact' %}" style="color: var(--text-secondary); text-decoration: none;">Contact</a></li>
+                                <li><a href="{% url 'post_add' %}" style="color: var(--text-secondary); text-decoration: none;">Write for Us</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Categories -->
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <h4 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Categories</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><a href="/?q=Web+Development" style="color: var(--text-secondary); text-decoration: none;">Web Development</a></li>
+                                <li><a href="/?q=Machine+Learning" style="color: var(--text-secondary); text-decoration: none;">Machine Learning</a></li>
+                                <li><a href="/?q=Cloud" style="color: var(--text-secondary); text-decoration: none;">Cloud Computing</a></li>
+                                <li><a href="/?q=UI/UX" style="color: var(--text-secondary); text-decoration: none;">UI/UX Design</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Legal -->
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <h4 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Legal</h4>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li><a href="{% url 'static_page' 'privacy-policy' %}" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a></li>
+                                <li><a href="{% url 'static_page' 'terms-of-service' %}" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a></li>
+                                <li><a href="{% url 'static_page' 'cookie-policy' %}" style="color: var(--text-secondary); text-decoration: none;">Cookie Policy</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Bottom Bar -->
+                    <div style="text-align: center; border-top: 1px solid var(--border-color); padding: 1.5rem 0; color: var(--text-muted);">
+                        &copy; 2026 Tech Blogs. All rights reserved.
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+<!-- Scroll position script to prevent page from moving to top -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var scrollpos = sessionStorage.getItem('scrollpos');
+        var scrollurl = sessionStorage.getItem('scrollurl');
+        if (scrollpos && scrollurl === window.location.href) {
+            window.scrollTo(0, scrollpos);
+        }
+        sessionStorage.removeItem('scrollpos');
+        sessionStorage.removeItem('scrollurl');
+    });
+    window.addEventListener('beforeunload', function() {
+        sessionStorage.setItem('scrollpos', window.scrollY);
+        sessionStorage.setItem('scrollurl', window.location.href);
+    });
+</script>
+</body>
+
+
+</html>
