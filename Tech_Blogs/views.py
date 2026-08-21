@@ -471,7 +471,6 @@ def send_otp_email(email, otp):
     send_mail(
         "Your Verification Code",
         f"Your OTP is {otp}",
-        # settings.EMAIL_HOST_USER,
         settings.DEFAULT_FROM_EMAIL,
         [email],
         html_message=render_to_string("otp_email.html", {
