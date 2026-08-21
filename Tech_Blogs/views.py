@@ -8,6 +8,7 @@ import datetime
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.conf import settings
 
 def get_current_user(request):
     user_id = request.session.get("user_id")
@@ -470,7 +471,7 @@ def send_otp_email(email, otp):
     send_mail(
         "Your Verification Code",
         f"Your OTP is {otp}",
-        "noreply@blog.com",
+        settings.EMAIL_HOST_USER,
         [email],
         html_message=render_to_string("otp_email.html", {
             "otp": otp,
