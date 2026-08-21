@@ -167,8 +167,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Email Configuration (Resend via Anymail — SMTP is blocked on Render)
-EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
 ANYMAIL = {
-    "RESEND_API_KEY": os.environ.get("RESEND_API_KEY"),
+    "SENDINBLUE_API_KEY": os.environ.get("BREVO_API_KEY"),
 }
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@yourdomain.com")
+DEFAULT_FROM_EMAIL = "yourname@gmail.com"  # the exact address you verified
