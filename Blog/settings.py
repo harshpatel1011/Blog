@@ -171,4 +171,4 @@ EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
 ANYMAIL = {
     "SENDINBLUE_API_KEY": os.environ.get("BREVO_API_KEY"),
 }
-DEFAULT_FROM_EMAIL = "yourname@gmail.com"  # the exact address you verified
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
