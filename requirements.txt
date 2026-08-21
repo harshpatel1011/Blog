@@ -7,3 +7,4 @@ python-dotenv
 Pillow
 django-cloudinary-storage
 cloudinary
+django-anymail
