@@ -57,6 +57,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Blog.wsgi.application'
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+DB_SCHEMA = os.environ.get("DB_SCHEMA", "blog")
 
 if DATABASE_URL:
     DATABASES = {
@@ -66,6 +67,9 @@ if DATABASE_URL:
             conn_max_age=600,
             ssl_require=True
         )
+    }
+    DATABASES['default']['OPTIONS'] = {
+        'options': f'-c search_path={DB_SCHEMA},public'
     }
 else:
     DATABASES = {
